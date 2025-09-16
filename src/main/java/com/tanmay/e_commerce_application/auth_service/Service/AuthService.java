@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.tanmay.e_commerce_application.auth_service.Model.UserModel;
+import com.tanmay.e_commerce_application.auth_service.Entity.UserModel;
 import com.tanmay.e_commerce_application.auth_service.Repo.UserRepo;
 import com.tanmay.e_commerce_application.auth_service.Utility.JwtUtil;
 import com.tanmay.e_commerce_application.auth_service.Wrapper.LoginRequest;

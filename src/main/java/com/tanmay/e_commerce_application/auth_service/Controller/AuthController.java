@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tanmay.e_commerce_application.auth_service.Model.UserModel;
+import com.tanmay.e_commerce_application.auth_service.Entity.UserModel;
 import com.tanmay.e_commerce_application.auth_service.Service.AuthService;
 import com.tanmay.e_commerce_application.auth_service.Wrapper.APIResponseWrapper;
 import com.tanmay.e_commerce_application.auth_service.Wrapper.LoginRequest;

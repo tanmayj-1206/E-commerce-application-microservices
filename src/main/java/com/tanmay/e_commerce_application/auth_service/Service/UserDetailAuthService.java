@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
-import com.tanmay.e_commerce_application.auth_service.Model.UserModel;
+import com.tanmay.e_commerce_application.auth_service.Entity.UserModel;
 import com.tanmay.e_commerce_application.auth_service.Repo.UserRepo;
 
 @Component

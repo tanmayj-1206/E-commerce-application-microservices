@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.auth_service.Model;
+package com.tanmay.e_commerce_application.auth_service.Entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
