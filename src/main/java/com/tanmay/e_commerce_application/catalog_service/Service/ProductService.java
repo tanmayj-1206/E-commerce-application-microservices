@@ -17,9 +17,10 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
-    public Page<Product> getProducts(int page, int size) {
+    public Page<ProductWrapper> getProducts(int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Product> productsPage = productRepository.findAll(pageable);
+        Page<ProductWrapper> productsPage = productRepository.findAll(pageable)
+                                                        .map(ProductWrapper::fromEntity);
         return productsPage;
     }
 

@@ -17,7 +17,7 @@ public class ProductWrapper {
     private String categoryName;
     private String categoryId;
 
-    public ProductWrapper(Long id, String name, String description, Double price, Integer quantity, String sku, String categoryName) {
+    public ProductWrapper(Long id, String name, String description, Double price, Integer quantity, String sku, String categoryName, Long categoryId) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -25,6 +25,7 @@ public class ProductWrapper {
         this.quantity = quantity;
         this.sku = sku;
         this.categoryName = categoryName;
+        this.categoryId = String.valueOf(categoryId);
     }
 
     public static ProductWrapper fromEntity(Product product) {
@@ -35,7 +36,8 @@ public class ProductWrapper {
             product.getPrice(),
             product.getQuantity(),
             product.getSku(),
-            product.getCategory() != null ? product.getCategory().getName() : null
+            product.getCategory() != null ? product.getCategory().getName() : null,
+            product.getCategory() != null ? product.getCategory().getId() : null
         );
     }
 }
