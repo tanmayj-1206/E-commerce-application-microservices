@@ -10,6 +10,7 @@ import com.tanmay.e_commerce_application.catalog_service.Wrappers.ProductWrapper
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,14 @@ public class ProductsController {
             ApiResponseWrapper.success("Products fetched successfully", productService.getProducts(page, size))
         );
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponseWrapper<?>> getProduct(@PathVariable String id) {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Product fetched successfully", productService.getProduct(id))
+        );
+    }
+    
 
     @PostMapping("/admin")
     public ResponseEntity<ApiResponseWrapper<?>> createProduct(@RequestBody ProductWrapper productWrapper) {

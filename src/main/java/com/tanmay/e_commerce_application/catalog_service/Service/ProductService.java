@@ -37,4 +37,10 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    public ProductWrapper getProduct(String id) {
+        return productRepository.findById(Long.valueOf(id))
+                                .map(ProductWrapper::fromEntity)
+                                .orElse(new ProductWrapper());
+    }
+
 }
