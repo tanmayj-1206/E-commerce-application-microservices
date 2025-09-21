@@ -3,7 +3,7 @@ package com.tanmay.e_commerce_application.search_service.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tanmay.e_commerce_application.search_service.Entity.Product;
+import com.tanmay.e_commerce_application.search_service.Repository.ProductRepo;
 import com.tanmay.e_commerce_application.search_service.Service.ProductSearchService;
 import com.tanmay.e_commerce_application.search_service.Wrapper.ApiResponseWrapper;
 import com.tanmay.e_commerce_application.search_service.Wrapper.RequestWrapper;
@@ -21,12 +21,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 
+
+
 @RestController
 @RequestMapping("api/search")
 public class ProductSearchController {
 
     @Autowired
     private ProductSearchService productSearchService;
+
+    @Autowired
+    private ProductRepo productRepo;
 
     @GetMapping("")
     public ResponseEntity<ApiResponseWrapper<?>> getProducts(@Valid @ModelAttribute RequestWrapper req) throws ElasticsearchException, IOException {
@@ -35,10 +40,18 @@ public class ProductSearchController {
         );
     }
     
-    @PostMapping("/add")
-    public String postMethodName(@RequestBody Product product) {
-        productSearchService.addProduct(product);
-        return "product added";
+    @GetMapping("suggestion")
+    public ResponseEntity<ApiResponseWrapper<?>> getSuggestions(@ModelAttribute RequestWrapper req) throws ElasticsearchException, IOException {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Suggestions fetched successfully", productSearchService.getSuggestions(req.getQ()))
+        );
     }
+
+    @PostMapping("deleteall")
+    public String delete() {
+        productRepo.deleteAll();
+        return "deleted";
+    }
+    
     
 }

@@ -51,8 +51,6 @@ public class Product {
         this.category = (String) productMap.get("category");
         this.price = (Double) productMap.get("price");
         this.inStock = (Integer)productMap.get("quantity") > 0;
-        this.suggestion = new Completion(List.of(
-            new String[]{this.name}
-        ));
+        this.suggestion = new Completion(List.of(this.name, this.category));
     }
 }

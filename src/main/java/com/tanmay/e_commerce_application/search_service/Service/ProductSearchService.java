@@ -47,9 +47,27 @@ public class ProductSearchService {
             .size(req.getSize()),
             Product.class
         );
+        System.out.println(response.hits().hits());
         return response.hits().hits().stream()
             .map(res -> ProductWrapper.fromEntity(res.source()))
             .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    }
+
+    public List<String> getSuggestions(String q) throws ElasticsearchException, IOException{
+        SearchResponse<Product> response = elasticsearchClient.search(s -> s
+            .index("products")
+            .suggest(ss -> ss.suggesters("product-suggest", su -> su.prefix(q)
+                .completion(c -> c.field("suggestion")
+                    .size(5)
+                    )
+                )),
+            Product.class
+        );
+
+        return response.suggest().get("product-suggest").stream()
+            .flatMap(s -> s.completion().options().stream())
+            .map(su -> su.text())
             .collect(Collectors.toList());
     }
 }
