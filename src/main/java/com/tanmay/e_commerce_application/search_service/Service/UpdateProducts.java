@@ -15,9 +15,14 @@ public class UpdateProducts {
     @Autowired
     private ProductRepo productRepo;
 
-    @KafkaListener(topics = "products", groupId = "ecommerce")
+    @KafkaListener(topics = "PRODUCTUPDATE", groupId = "ecommerce")
     public void updateProduct(Map<String, Object> productMap){
         Product product = new Product(productMap);
-        productRepo.save(product);
+        productRepo.findByProductId(product.getProductId())
+            .map(p -> {
+                product.setId(p.getId());
+                return productRepo.save(product);
+            })
+            .orElseGet(() -> productRepo.save(product));   
     }
 }

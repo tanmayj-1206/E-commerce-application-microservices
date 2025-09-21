@@ -5,11 +5,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tanmay.e_commerce_application.search_service.Entity.Product;
 import com.tanmay.e_commerce_application.search_service.Service.ProductSearchService;
+import com.tanmay.e_commerce_application.search_service.Wrapper.ApiResponseWrapper;
+import com.tanmay.e_commerce_application.search_service.Wrapper.RequestWrapper;
 
-import java.util.List;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
+import jakarta.validation.Valid;
 
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -23,8 +29,10 @@ public class ProductSearchController {
     private ProductSearchService productSearchService;
 
     @GetMapping("")
-    public List<Product> getProducts() {
-        return productSearchService.getProduct();
+    public ResponseEntity<ApiResponseWrapper<?>> getProducts(@Valid @ModelAttribute RequestWrapper req) throws ElasticsearchException, IOException {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Products fetched successfully", productSearchService.getProducts(req))
+        );
     }
     
     @PostMapping("/add")
