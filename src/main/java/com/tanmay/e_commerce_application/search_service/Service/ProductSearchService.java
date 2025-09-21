@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.tanmay.e_commerce_application.search_service.Entity.Product;
 import com.tanmay.e_commerce_application.search_service.Repository.ProductRepo;
+import com.tanmay.e_commerce_application.search_service.Wrapper.ProductWrapper;
 import com.tanmay.e_commerce_application.search_service.Wrapper.RequestWrapper;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
@@ -31,7 +32,7 @@ public class ProductSearchService {
         productRepo.save(product);
     }
 
-    public List<Product> getProducts(RequestWrapper req) throws ElasticsearchException, IOException{
+    public List<ProductWrapper> getProducts(RequestWrapper req) throws ElasticsearchException, IOException{
         BoolQuery.Builder qBuilder = new BoolQuery.Builder();
         qBuilder.must(q -> q.fuzzy(f -> f.field("name").value(req.getQ()).fuzziness("AUTO")));
         if(req.getCategory() != null){
@@ -47,7 +48,7 @@ public class ProductSearchService {
             Product.class
         );
         return response.hits().hits().stream()
-            .map(res -> res.source())
+            .map(res -> ProductWrapper.fromEntity(res.source()))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
