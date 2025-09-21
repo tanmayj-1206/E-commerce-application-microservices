@@ -43,10 +43,9 @@ public class ProductService {
         product.setQuantity(productWrapper.getQuantity());
         product.setSku(productWrapper.getSku());
         Category category = categoryRepo.findById(Long.parseLong(productWrapper.getCategoryId())).get();
-        System.out.println(category);
-        publishProduct(productWrapper, category.getName());
         product.setCategory(category);
-        productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        publishProduct(savedProduct);
     }
 
     public ProductWrapper getProduct(String id) {
@@ -55,14 +54,15 @@ public class ProductService {
                                 .orElse(new ProductWrapper());
     }
 
-    private void publishProduct(ProductWrapper productWrapper, String categoryName){
-        Map<String, Object> proMap = new HashMap<>();
-        proMap.put("name", productWrapper.getName());
-        proMap.put("description", productWrapper.getDescription());
-        proMap.put("price", productWrapper.getPrice());
-        proMap.put("inStock", productWrapper.getQuantity() > 0 ? true : false);
-        proMap.put("category", categoryName);
-        kafkaTemplate.send("products", proMap);
+    private void publishProduct(Product product){
+        Map<String, Object> productMap = new HashMap<>();
+        productMap.put("id", product.getId());
+        productMap.put("name", product.getName());
+        productMap.put("description", product.getDescription());
+        productMap.put("price", product.getPrice());
+        productMap.put("quantity", product.getQuantity());
+        productMap.put("category", product.getCategory().getName());
+        kafkaTemplate.send("PRODUCTUPDATE", productMap);
     }
 
 }
