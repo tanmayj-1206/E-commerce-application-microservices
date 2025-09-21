@@ -47,7 +47,6 @@ public class ProductSearchService {
             .size(req.getSize()),
             Product.class
         );
-        System.out.println(response.hits().hits());
         return response.hits().hits().stream()
             .map(res -> ProductWrapper.fromEntity(res.source()))
             .filter(Objects::nonNull)

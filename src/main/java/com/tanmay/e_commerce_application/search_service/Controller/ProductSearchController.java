@@ -3,7 +3,6 @@ package com.tanmay.e_commerce_application.search_service.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.tanmay.e_commerce_application.search_service.Repository.ProductRepo;
 import com.tanmay.e_commerce_application.search_service.Service.ProductSearchService;
 import com.tanmay.e_commerce_application.search_service.Wrapper.ApiResponseWrapper;
 import com.tanmay.e_commerce_application.search_service.Wrapper.RequestWrapper;
@@ -16,12 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-
-
-
 
 @RestController
 @RequestMapping("api/search")
@@ -29,9 +22,6 @@ public class ProductSearchController {
 
     @Autowired
     private ProductSearchService productSearchService;
-
-    @Autowired
-    private ProductRepo productRepo;
 
     @GetMapping("")
     public ResponseEntity<ApiResponseWrapper<?>> getProducts(@Valid @ModelAttribute RequestWrapper req) throws ElasticsearchException, IOException {
@@ -46,12 +36,5 @@ public class ProductSearchController {
             ApiResponseWrapper.success("Suggestions fetched successfully", productSearchService.getSuggestions(req.getQ()))
         );
     }
-
-    @PostMapping("deleteall")
-    public String delete() {
-        productRepo.deleteAll();
-        return "deleted";
-    }
-    
     
 }
