@@ -1,26 +1,31 @@
 package com.tanmay.e_commerce_application.catalog_service.DTO.Wrappers;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ApiResponseWrapper<T> {
     private String message;
     private T payLoad;
     private boolean isSuccess;
     private String errorMessage;
 
-    public ApiResponseWrapper(String message, T payLoad, boolean isSuccess, String errorMessage) {
-        this.message = message;
-        this.payLoad = payLoad;
-        this.isSuccess = isSuccess;
-        this.errorMessage = errorMessage;
-    }
-
     public static <T> ApiResponseWrapper<T> success(String message, T payLoad) {
-        return new ApiResponseWrapper<>(message, payLoad, true, null);
+        return ApiResponseWrapper.<T>builder()
+            .message(message)
+            .payLoad(payLoad)
+            .build();
     }
 
     public static <T> ApiResponseWrapper<T> failure(String message, String errorMessage) {
-        return new ApiResponseWrapper<>(message, null, false, errorMessage);
+        return ApiResponseWrapper.<T>builder()
+            .message(message)
+            .errorMessage(errorMessage)
+            .build();
     }
 }

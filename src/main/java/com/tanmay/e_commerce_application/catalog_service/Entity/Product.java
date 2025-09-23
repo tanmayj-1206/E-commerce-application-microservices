@@ -3,6 +3,7 @@ package com.tanmay.e_commerce_application.catalog_service.Entity;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.tanmay.e_commerce_application.catalog_service.DTO.Request.ProductRequestDTO;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,7 +25,7 @@ import lombok.NoArgsConstructor;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID Id;
+    private UUID id;
 
     private String name;
 
@@ -36,4 +37,14 @@ public class Product {
     @JoinColumn(name = "category_id")
     @JsonBackReference
     private Category categoryId;
+
+    public static Product toEntity(ProductRequestDTO pDto, Category category){
+        return Product.builder()
+            .id(pDto.getId() != null ? UUID.fromString(pDto.getId()) : null)
+            .name(pDto.getName())
+            .description(pDto.getDescription())
+            .brand(pDto.getBrand())
+            .categoryId(category)
+            .build();
+    }
 }
