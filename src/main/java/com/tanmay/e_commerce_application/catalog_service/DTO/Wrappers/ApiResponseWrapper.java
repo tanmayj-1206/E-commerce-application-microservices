@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.catalog_service.Wrappers;
+package com.tanmay.e_commerce_application.catalog_service.DTO.Wrappers;
 
 import lombok.Data;
 
