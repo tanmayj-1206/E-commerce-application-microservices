@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tanmay.e_commerce_application.catalog_service.DTO.Request.CategoryRequestDTO;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -44,4 +45,11 @@ public class Category {
     @OneToMany(mappedBy = "categoryId")
     @JsonManagedReference
     private List<Product> products;
+
+    public static Category toEntity(CategoryRequestDTO cDto, Category parent){
+        return Category.builder()
+            .name(cDto.getName())
+            .parentId(parent)
+            .build();
+    }
 }

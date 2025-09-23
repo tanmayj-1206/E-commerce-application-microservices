@@ -19,6 +19,7 @@ public class ApiResponseWrapper<T> {
         return ApiResponseWrapper.<T>builder()
             .message(message)
             .payLoad(payLoad)
+            .isSuccess(true)
             .build();
     }
 
@@ -26,6 +27,7 @@ public class ApiResponseWrapper<T> {
         return ApiResponseWrapper.<T>builder()
             .message(message)
             .errorMessage(errorMessage)
+            .isSuccess(false)
             .build();
     }
 }
