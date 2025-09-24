@@ -1,0 +1,28 @@
+package com.tanmay.e_commerce_application.catalog_service.Controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.tanmay.e_commerce_application.catalog_service.DTO.Request.VariantRequestDTO;
+import com.tanmay.e_commerce_application.catalog_service.DTO.Wrappers.ApiResponseWrapper;
+import com.tanmay.e_commerce_application.catalog_service.Service.ProductVariantService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+
+@RestController
+@RequestMapping("api/variant")
+public class ProductVariantsController {
+    @Autowired
+    private ProductVariantService productVariantService;
+
+    @PostMapping("add")
+    public ResponseEntity<ApiResponseWrapper<?>> addVariant(@RequestBody VariantRequestDTO variant) {        
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Variant added successfully", productVariantService.addVariant(variant))
+        );
+    }
+    
+}   
