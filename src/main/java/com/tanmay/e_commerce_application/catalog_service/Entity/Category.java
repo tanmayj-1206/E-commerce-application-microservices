@@ -1,6 +1,6 @@
 package com.tanmay.e_commerce_application.catalog_service.Entity;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -18,17 +18,22 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@Entity
+@Getter
+@Setter
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
 @AllArgsConstructor
 @Builder
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
     private UUID id;
     
     private String name;
@@ -40,14 +45,22 @@ public class Category {
 
     @OneToMany(mappedBy = "parentId", cascade = CascadeType.ALL, orphanRemoval = false)
     @JsonManagedReference
-    private List<Category> children;
+    private Set<Category> children;
 
     @OneToMany(mappedBy = "categoryId")
     @JsonManagedReference
-    private List<Product> products;
+    private Set<Product> products;
 
     public static Category toEntity(CategoryRequestDTO cDto, Category parent){
         return Category.builder()
+            .name(cDto.getName())
+            .parentId(parent)
+            .build();
+    }
+
+    public static Category toEntity(CategoryRequestDTO cDto, Category parent, UUID id){
+        return Category.builder()
+            .id(id)
             .name(cDto.getName())
             .parentId(parent)
             .build();

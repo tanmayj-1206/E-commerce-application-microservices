@@ -11,6 +11,8 @@ import com.tanmay.e_commerce_application.catalog_service.Service.CategoryService
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 
@@ -27,12 +29,21 @@ public class CategoryController {
         );
     }
     
-    @PostMapping("addcategory")
+    @PostMapping("add")
     public ResponseEntity<ApiResponseWrapper<?>> addCategory(@RequestBody CategoryRequestDTO category) {
         categoryService.addCategory(category);
         
         return ResponseEntity.ok(
             ApiResponseWrapper.success("Category added successfully", null)
+        );
+    }
+
+    @PostMapping("update/{id}")
+    public ResponseEntity<ApiResponseWrapper<?>> updateCategory(@PathVariable String id, @RequestBody CategoryRequestDTO category) {
+        categoryService.updateCategory(id, category);
+        
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Category updated successfully", null)
         );
     }
     
