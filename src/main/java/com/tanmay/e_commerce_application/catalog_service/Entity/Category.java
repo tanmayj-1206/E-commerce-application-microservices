@@ -42,6 +42,7 @@ public class Category {
     public static Category toEntity(CategoryRequestDTO cDto){
         return Category.builder()
             .name(cDto.getName())
+            .description(cDto.getDescription())
             .build();
     }
 
@@ -49,6 +50,7 @@ public class Category {
         return Category.builder()
             .id(id)
             .name(cDto.getName())
+            .description(cDto.getDescription())
             .build();
     }
 }
