@@ -13,7 +13,7 @@ import com.tanmay.e_commerce_application.catalog_service.Entity.Category;
 @Repository
 public interface CategoryRepo extends JpaRepository<Category, UUID>{
 
-    @EntityGraph(attributePaths = {"products", "children", "parentId"})
+    @EntityGraph(attributePaths = {"products"})
     @Query("SELECT c FROM Category c")
     List<Category> findAllWithProducts();
 }

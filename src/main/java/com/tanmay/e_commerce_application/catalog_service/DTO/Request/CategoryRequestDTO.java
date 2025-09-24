@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CategoryRequestDTO {
     private String name;
-    private String parentId;
+    private String description;
 }
