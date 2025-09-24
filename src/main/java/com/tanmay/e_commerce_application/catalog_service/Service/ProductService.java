@@ -36,15 +36,22 @@ public class ProductService {
                                 .orElse(new ProductResponseDTO());
     }
 
-    public void addProduct(ProductRequestDTO pDto) {
-        categoryRepo.findById(UUID.fromString(pDto.getCategoryId()))
-            .map(c -> {
-                Product product = Product.toEntity(pDto, c);
-                productRepository.save(product);
-                return c;
-            }).orElseThrow(
+    public ProductResponseDTO addProduct(ProductRequestDTO pDto) {
+        return categoryRepo.findById(UUID.fromString(pDto.getCategoryId()))
+            .map(c -> ProductResponseDTO.fromEntity(productRepository.save(Product.toEntity(pDto, c))))
+            .orElseThrow(
                     () -> new RuntimeException("Invalid category id")
                 );
+    }
+
+    public ProductResponseDTO updateProduct(String id, ProductRequestDTO pRequestDTO) {
+        return productRepository.findById(UUID.fromString(id))
+            .map(
+                p -> categoryRepo.findById(UUID.fromString(pRequestDTO.getCategoryId()))
+                    .map(c -> ProductResponseDTO.fromEntity(productRepository.save(Product.toEntity(pRequestDTO, c, p.getId()))))
+                    .orElseThrow(() -> new RuntimeException("Invalid category id"))
+                )
+            .orElseThrow(() -> new RuntimeException("Invalid product id"));
     }
 
 }

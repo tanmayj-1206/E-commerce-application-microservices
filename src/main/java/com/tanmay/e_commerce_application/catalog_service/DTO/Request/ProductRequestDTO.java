@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ProductRequestDTO {
-    private String id;
     private String name;
     private String description;
     private String categoryId;

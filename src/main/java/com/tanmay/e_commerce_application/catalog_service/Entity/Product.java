@@ -40,7 +40,16 @@ public class Product {
 
     public static Product toEntity(ProductRequestDTO pDto, Category category){
         return Product.builder()
-            .id(pDto.getId() != null ? UUID.fromString(pDto.getId()) : null)
+            .name(pDto.getName())
+            .description(pDto.getDescription())
+            .brand(pDto.getBrand())
+            .categoryId(category)
+            .build();
+    }
+
+    public static Product toEntity(ProductRequestDTO pDto, Category category, UUID id){
+        return Product.builder()
+            .id(id)
             .name(pDto.getName())
             .description(pDto.getDescription())
             .brand(pDto.getBrand())

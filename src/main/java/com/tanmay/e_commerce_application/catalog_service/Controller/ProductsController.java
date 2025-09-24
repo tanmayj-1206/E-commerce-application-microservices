@@ -40,11 +40,18 @@ public class ProductsController {
     }
       
     @PostMapping("admin/add")
-    public ResponseEntity<ApiResponseWrapper<?>> addProduct(@RequestBody ProductRequestDTO product) { 
-        productService.addProduct(product);       
+    public ResponseEntity<ApiResponseWrapper<?>> addProduct(@RequestBody ProductRequestDTO product) {        
         return ResponseEntity.ok(
-            ApiResponseWrapper.success("Product added successfully", null)
+            ApiResponseWrapper.success("Product added successfully", productService.addProduct(product))
         );
     }
+
+    @PostMapping("admin/update/{id}")
+    public ResponseEntity<ApiResponseWrapper<?>> updateProduct(@PathVariable String id, @RequestBody ProductRequestDTO pRequestDTO) {        
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Product updated successfully", productService.updateProduct(id, pRequestDTO))
+        );
+    }
+    
     
 }
