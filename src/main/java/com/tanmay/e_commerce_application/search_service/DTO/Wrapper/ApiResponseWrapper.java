@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.search_service.Wrapper;
+package com.tanmay.e_commerce_application.search_service.DTO.Wrapper;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

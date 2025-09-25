@@ -1,8 +1,6 @@
 package com.tanmay.e_commerce_application.search_service.Entity;
 
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.CompletionField;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -11,19 +9,24 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.core.suggest.Completion;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.tanmay.e_commerce_application.search_service.DTO.Event.ProductEvent;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Document(indexName = "products")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Product {
     @Id
     private String id;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Keyword)
     private String productId;
 
     @Field(type = FieldType.Text)
@@ -35,6 +38,9 @@ public class Product {
     @Field(type = FieldType.Keyword)
     private String category;
 
+    @Field(type = FieldType.Keyword)
+    private String brand;
+
     @Field(type = FieldType.Double)
     private Double price;
 
@@ -44,13 +50,16 @@ public class Product {
     @CompletionField
     private Completion suggestion;
 
-    public Product(Map<String, Object> productMap){
-        this.productId = (Integer) productMap.get("id") != null ? String.valueOf((Integer) productMap.get("id")) : null;
-        this.name = (String) productMap.get("name");
-        this.description = (String) productMap.get("description");
-        this.category = (String) productMap.get("category");
-        this.price = (Double) productMap.get("price");
-        this.inStock = (Integer)productMap.get("quantity") > 0;
-        this.suggestion = new Completion(List.of(this.name, this.category));
+    public static Product toEntity(ProductEvent pEvent){
+        return Product.builder()
+            .category(pEvent.getCategory())
+            .description(pEvent.getDescription())
+            .name(pEvent.getName())
+            .price(pEvent.getPrice())
+            .productId(pEvent.getId())
+            .brand(pEvent.getBrand())
+            .suggestion(new Completion(List.of(pEvent.getName(), pEvent.getCategory(), pEvent.getBrand())))
+            .build();
+
     }
 }

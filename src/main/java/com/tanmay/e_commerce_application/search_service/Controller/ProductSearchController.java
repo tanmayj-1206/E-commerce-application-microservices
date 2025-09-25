@@ -3,9 +3,9 @@ package com.tanmay.e_commerce_application.search_service.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tanmay.e_commerce_application.search_service.DTO.Request.RequestDTO;
+import com.tanmay.e_commerce_application.search_service.DTO.Wrapper.ApiResponseWrapper;
 import com.tanmay.e_commerce_application.search_service.Service.ProductSearchService;
-import com.tanmay.e_commerce_application.search_service.Wrapper.ApiResponseWrapper;
-import com.tanmay.e_commerce_application.search_service.Wrapper.RequestWrapper;
 
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import jakarta.validation.Valid;
@@ -24,14 +24,14 @@ public class ProductSearchController {
     private ProductSearchService productSearchService;
 
     @GetMapping("")
-    public ResponseEntity<ApiResponseWrapper<?>> getProducts(@Valid @ModelAttribute RequestWrapper req) throws ElasticsearchException, IOException {
+    public ResponseEntity<ApiResponseWrapper<?>> getProducts(@Valid @ModelAttribute RequestDTO req) throws ElasticsearchException, IOException {
         return ResponseEntity.ok(
             ApiResponseWrapper.success("Products fetched successfully", productSearchService.getProducts(req))
         );
     }
     
     @GetMapping("suggestion")
-    public ResponseEntity<ApiResponseWrapper<?>> getSuggestions(@ModelAttribute RequestWrapper req) throws ElasticsearchException, IOException {
+    public ResponseEntity<ApiResponseWrapper<?>> getSuggestions(@ModelAttribute RequestDTO req) throws ElasticsearchException, IOException {
         return ResponseEntity.ok(
             ApiResponseWrapper.success("Suggestions fetched successfully", productSearchService.getSuggestions(req.getQ()))
         );

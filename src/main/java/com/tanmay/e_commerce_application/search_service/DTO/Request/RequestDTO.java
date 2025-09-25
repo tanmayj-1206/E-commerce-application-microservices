@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.search_service.Wrapper;
+package com.tanmay.e_commerce_application.search_service.DTO.Request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class RequestWrapper {
+public class RequestDTO {
 
     @NotNull(message = "Product name is required")
     private String q;

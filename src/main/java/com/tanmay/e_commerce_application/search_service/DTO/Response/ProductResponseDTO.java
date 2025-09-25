@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.search_service.Wrapper;
+package com.tanmay.e_commerce_application.search_service.DTO.Response;
 
 import com.tanmay.e_commerce_application.search_service.Entity.Product;
 
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class ProductWrapper {
+public class ProductResponseDTO {
 
     private String name;
     private String description;
@@ -15,8 +15,8 @@ public class ProductWrapper {
     private Double price;
     private Boolean inStock;
 
-    public static ProductWrapper fromEntity(Product product){
-        ProductWrapper productWrapper = new ProductWrapper();
+    public static ProductResponseDTO fromEntity(Product product){
+        ProductResponseDTO productWrapper = new ProductResponseDTO();
         productWrapper.name = product.getName();
         productWrapper.category = product.getCategory();
         productWrapper.description = product.getDescription();
