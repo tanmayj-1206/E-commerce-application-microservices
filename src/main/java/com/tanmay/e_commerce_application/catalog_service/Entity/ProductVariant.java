@@ -40,7 +40,7 @@ public class ProductVariant {
     @Enumerated(EnumType.STRING)
     private Color color;
 
-    private Integer priceOverride;
+    private Double priceOverride;
 
     public static ProductVariant toEntity(VariantRequestDTO vDto, Product product){
         return ProductVariant.builder()

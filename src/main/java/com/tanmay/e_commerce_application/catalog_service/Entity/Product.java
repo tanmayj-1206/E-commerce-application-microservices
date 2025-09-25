@@ -36,7 +36,7 @@ public class Product {
 
     private String brand;
 
-    private Integer price;
+    private Double price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -53,6 +53,7 @@ public class Product {
             .description(pDto.getDescription())
             .brand(pDto.getBrand())
             .categoryId(category)
+            .price(pDto.getPrice())
             .build();
     }
 
@@ -63,6 +64,18 @@ public class Product {
             .description(pDto.getDescription())
             .brand(pDto.getBrand())
             .categoryId(category)
+            .price(pDto.getPrice())
+            .build();
+    }
+
+    public static Product toEntity(ProductRequestDTO pDto, Category category, Product exProduct){
+        return Product.builder()
+            .id(exProduct.getId())
+            .name(pDto.getName() != null ? pDto.getName() : exProduct.getName())
+            .description(pDto.getDescription() != null ? pDto.getDescription() : exProduct.getDescription())
+            .brand(pDto.getBrand() != null ? pDto.getBrand() : exProduct.getBrand())
+            .categoryId(category)
+            .price(pDto.getPrice() != null ? pDto.getPrice() : exProduct.getPrice())
             .build();
     }
 }

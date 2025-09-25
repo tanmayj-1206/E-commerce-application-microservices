@@ -6,8 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.tanmay.e_commerce_application.catalog_service.DTO.Events.ProductEvent;
 import com.tanmay.e_commerce_application.catalog_service.DTO.Request.ProductRequestDTO;
 import com.tanmay.e_commerce_application.catalog_service.DTO.Response.ProductResponseDTO;
 import com.tanmay.e_commerce_application.catalog_service.Entity.Product;
@@ -16,6 +18,9 @@ import com.tanmay.e_commerce_application.catalog_service.Repository.ProductRepo;
 
 @Service
 public class ProductService {
+
+    @Autowired
+    private KafkaTemplate<String, ProductEvent> kafkaTemplate;
 
     @Autowired
     private ProductRepo productRepository;
@@ -38,7 +43,11 @@ public class ProductService {
 
     public ProductResponseDTO addProduct(ProductRequestDTO pDto) {
         return categoryRepo.findById(UUID.fromString(pDto.getCategoryId()))
-            .map(c -> ProductResponseDTO.fromEntity(productRepository.save(Product.toEntity(pDto, c))))
+            .map(c -> {
+                Product product = productRepository.save(Product.toEntity(pDto, c));
+                kafkaTemplate.send("PRODUCT.UPDATED", ProductEvent.fromEntity(product));
+                return ProductResponseDTO.fromEntity(product);
+            })
             .orElseThrow(
                     () -> new RuntimeException("Invalid category id")
                 );
@@ -48,7 +57,11 @@ public class ProductService {
         return productRepository.findById(UUID.fromString(id))
             .map(
                 p -> categoryRepo.findById(UUID.fromString(pRequestDTO.getCategoryId()))
-                    .map(c -> ProductResponseDTO.fromEntity(productRepository.save(Product.toEntity(pRequestDTO, c, p.getId()))))
+                    .map(c -> {
+                        Product product = productRepository.save(Product.toEntity(pRequestDTO, c, p.getId()));
+                        kafkaTemplate.send("PRODUCT.UPDATED", ProductEvent.fromEntity(product));
+                        return ProductResponseDTO.fromEntity(product);
+                    })
                     .orElseThrow(() -> new RuntimeException("Invalid category id"))
                 )
             .orElseThrow(() -> new RuntimeException("Invalid product id"));

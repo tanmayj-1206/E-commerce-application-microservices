@@ -16,7 +16,7 @@ public class VariantResponseDTO {
     private String id;
     private String sku;
     private Color color;
-    private Integer priceOverride;
+    private Double priceOverride;
     private String productId;
     private String productName;
 

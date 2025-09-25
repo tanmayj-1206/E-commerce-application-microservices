@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 public class VariantRequestDTO {
     private String productId;
     private Color color;
-    private Integer price;
+    private Double price;
     private String sku;
 }

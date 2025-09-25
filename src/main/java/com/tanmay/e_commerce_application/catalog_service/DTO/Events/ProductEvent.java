@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.catalog_service.DTO.Response;
+package com.tanmay.e_commerce_application.catalog_service.DTO.Events;
 
 import com.tanmay.e_commerce_application.catalog_service.Entity.Product;
 
@@ -11,23 +11,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProductResponseDTO {
+public class ProductEvent {
     private String id;
     private String name;
     private String description;
-    private String categoryId;
-    private String categoryName;
+    private String category;
     private String brand;
     private Double price;
 
-    public static ProductResponseDTO fromEntity(Product product){
-        return ProductResponseDTO.builder()
+    public static ProductEvent fromEntity(Product product){
+        return ProductEvent.builder()
             .id(String.valueOf(product.getId()))
             .name(product.getName())
             .description(product.getDescription())
-            .categoryId(String.valueOf(product.getCategoryId().getId()))
-            .categoryName(product.getCategoryId().getName())
             .brand(product.getBrand())
+            .category(product.getCategoryId().getName())
             .price(product.getPrice())
             .build();
     }
