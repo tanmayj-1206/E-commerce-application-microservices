@@ -6,8 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.tanmay.e_commerce_application.inventory_service.Entity.Inventory;
+import java.util.Optional;
+
 
 @Repository
 public interface InventoryRepo extends JpaRepository<Inventory, UUID> {
 
+    Optional<Inventory> findByVariantId(UUID variantId);
 }
