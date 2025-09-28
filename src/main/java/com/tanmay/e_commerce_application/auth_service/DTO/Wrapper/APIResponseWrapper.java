@@ -1,4 +1,4 @@
-package com.tanmay.e_commerce_application.auth_service.Wrapper;
+package com.tanmay.e_commerce_application.auth_service.DTO.Wrapper;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

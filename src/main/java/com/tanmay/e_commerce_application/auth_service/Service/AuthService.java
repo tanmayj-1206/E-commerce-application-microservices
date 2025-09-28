@@ -7,10 +7,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.tanmay.e_commerce_application.auth_service.Entity.UserModel;
+import com.tanmay.e_commerce_application.auth_service.DTO.Request.LoginRequest;
+import com.tanmay.e_commerce_application.auth_service.DTO.Request.UsersRequestDTO;
+import com.tanmay.e_commerce_application.auth_service.DTO.Response.LoginResponse;
+import com.tanmay.e_commerce_application.auth_service.DTO.Response.UsersResponseDTO;
+import com.tanmay.e_commerce_application.auth_service.Entity.Users;
 import com.tanmay.e_commerce_application.auth_service.Repo.UserRepo;
 import com.tanmay.e_commerce_application.auth_service.Utility.JwtUtil;
-import com.tanmay.e_commerce_application.auth_service.Wrapper.LoginRequest;
 
 @Service
 public class AuthService {
@@ -24,14 +27,17 @@ public class AuthService {
     @Autowired
     private UserRepo userRepo;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public void register(UserModel user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        userRepo.save(user);
+    public UsersResponseDTO register(UsersRequestDTO user) {
+        final Users u = userRepo.save(Users.toEntity(user, encoder.encode(user.getPassword())));
+        return UsersResponseDTO.fromEntity(u);
     }
 
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
         try{
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -42,7 +48,7 @@ public class AuthService {
             throw new RuntimeException("Invalid username or password");
         }
         UserDetails user = userDetailAuthService.loadUserByUsername(request.getUsername());
-        String token = JwtUtil.generateToken(user);
-        return token;
+        String token = jwtUtil.generateToken(user);
+        return LoginResponse.jwtToken(token);
     }
 }
