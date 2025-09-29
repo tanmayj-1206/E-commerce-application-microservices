@@ -26,4 +26,11 @@ public class InventoryService {
         return InventoryResponseDTO.fromEntity(inventoryRepo.save(inventory));
     }
 
+    public InventoryResponseDTO getInventory(String id){
+        final Inventory inventory = inventoryRepo.findByVariantId(UUID.fromString(id))
+            .orElse(new Inventory());
+        
+            return InventoryResponseDTO.fromEntity(inventory);
+    }
+
 }

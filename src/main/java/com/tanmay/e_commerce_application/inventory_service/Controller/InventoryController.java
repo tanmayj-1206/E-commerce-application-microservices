@@ -10,6 +10,9 @@ import com.tanmay.e_commerce_application.inventory_service.DTO.Wrapper.ApiRespon
 import com.tanmay.e_commerce_application.inventory_service.Service.InventoryService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @RestController
@@ -26,5 +29,13 @@ public class InventoryController {
             ApiResponseWrapper.success("Inventory Updated", inventoryService.updateInventory(iDto))
         );
     }
+
+    @GetMapping("get/{id}")
+    public ResponseEntity<ApiResponseWrapper<?>> getInventory(@PathVariable String id) {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Inventory fetched", inventoryService.getInventory(id))
+        );
+    }
+    
     
 }
