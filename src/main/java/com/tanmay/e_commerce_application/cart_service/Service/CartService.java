@@ -1,8 +1,13 @@
 package com.tanmay.e_commerce_application.cart_service.Service;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -171,6 +176,59 @@ public class CartService {
             .guestCartId(guestCartId)
             .cartItems(mapIdVsCartItem.values().stream().toList())
             .build();
+    }
+
+    public CartResponseDTO mergeCart(String userId, String guestUserId, String idempotencyKey){
+        CartResponseDTO cDto = (CartResponseDTO) redisTemplate.opsForValue().get(idempotencyKey);
+        if(cDto != null){
+            return cDto;
+        }
+        Set<UUID> idSet = new HashSet<>();
+        GuestCartWrapper gWrapper = (GuestCartWrapper) Optional.of(redisTemplate.opsForValue().get(getGuestUserKey(guestUserId)))
+            .orElseThrow(() -> new RuntimeException("Invalid guest id"));
+
+        Cart cart = cRepo.findCartWithCartItems(UUID.fromString(userId))
+            .orElseThrow(() -> new RuntimeException("Invalid user"));        
+        
+        Map<UUID, GuestCartItemWrapper> mapIdVsGuestCartItem = gWrapper.getGuestCartItems();
+        Map<UUID, CartItems> mapIdVsCartItem = cart.getCartItems().stream()
+            .collect(Collectors.toMap(ci -> ci.getVariantId(), ci -> ci));
+
+        idSet.addAll(mapIdVsCartItem.keySet());
+        idSet.addAll(mapIdVsGuestCartItem.keySet());
+
+        ResponseEntity<ApiResponseWrapper<Map<String, InventoryResponseDTO>>> response = iClient.getInventoryByIds(idSet);
+        ResponseEntity<ApiResponseWrapper<Map<String, VariantResponseDTO>>> resp = catalogClient.getVariants(idSet);
+        if(response.getStatusCode() != HttpStatus.OK || response.getBody() == null || resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+            throw new RuntimeException("Some error occured");
+        }
+        Map<String, VariantResponseDTO> mapIdVsVariant = resp.getBody().getPayLoad();
+        Map<String, InventoryResponseDTO> mapIdVsInventory = response.getBody().getPayLoad();
+
+        mapIdVsGuestCartItem.keySet().stream().forEach(key -> {
+                if(mapIdVsCartItem.containsKey(key)){
+                    Integer cartQuant = mapIdVsCartItem.get(key).getQuantity();
+                    Integer guestCartQuant = mapIdVsGuestCartItem.get(key).getQuantity();
+                    Integer updatedQuantity = Math.min(cartQuant + guestCartQuant, mapIdVsInventory.get(String.valueOf(key)).getStock());
+                    mapIdVsCartItem.get(key).setQuantity(updatedQuantity);
+                    mapIdVsCartItem.get(key).setPrice(updatedQuantity * mapIdVsVariant.get(String.valueOf(key)).getPriceOverride());
+                } else{
+                    Integer quantity = Math.min(mapIdVsGuestCartItem.get(key).getQuantity(), mapIdVsInventory.get(String.valueOf(key)).getStock());
+                    CartItems cItems = CartItems.builder()
+                        .cartId(cart)
+                        .productId(UUID.fromString(mapIdVsVariant.get(String.valueOf(key)).getProductId()))
+                        .variantId(key)
+                        .quantity(quantity)
+                        .price(quantity * mapIdVsVariant.get(String.valueOf(key)).getPriceOverride())
+                        .build();
+                    mapIdVsCartItem.put(key, cItems);
+                }
+            });
+        redisTemplate.opsForValue().getAndDelete(getGuestUserKey(guestUserId));
+        final List<CartItems> updatedCartItems = cItemRepo.saveAll(mapIdVsCartItem.values());
+        cart.setCartItems(updatedCartItems);
+        redisTemplate.opsForValue().set(idempotencyKey, new CartResponseDTO(cart));
+        return new CartResponseDTO(cart);
     }
 
     private String getGuestUserKey(String guestId){

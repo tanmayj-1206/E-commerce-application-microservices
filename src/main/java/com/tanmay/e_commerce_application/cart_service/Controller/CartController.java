@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tanmay.e_commerce_application.cart_service.DTO.Request.CartItemRequestDTO;
+import com.tanmay.e_commerce_application.cart_service.DTO.Request.MergeRequestDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.ApiResponseWrapper;
 import com.tanmay.e_commerce_application.cart_service.Service.CartService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +57,14 @@ public class CartController {
             ApiResponseWrapper.success("Item added", cService.addItemToGuestCart(cDto, id))
         );
     }
+
+    @PostMapping("merge")
+    public ResponseEntity<ApiResponseWrapper<?>> mergeCart(@RequestBody MergeRequestDTO req, @RequestHeader("X-User-Id") String userId) {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Cart merged", cService.mergeCart(userId, req.getGuestCartId(), req.getIdempotencyKey()))
+        );
+    }
+    
     
     
 }

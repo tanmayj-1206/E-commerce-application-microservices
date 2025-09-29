@@ -14,12 +14,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class CartItems {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,6 +33,7 @@ public class CartItems {
     @ManyToOne
     @JoinColumn(name = "cart_id")
     @JsonBackReference
+    @ToString.Exclude
     private Cart cartId;
 
     private Integer quantity;
