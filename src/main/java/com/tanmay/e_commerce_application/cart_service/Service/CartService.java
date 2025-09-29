@@ -1,8 +1,11 @@
 package com.tanmay.e_commerce_application.cart_service.Service;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -10,8 +13,11 @@ import org.springframework.stereotype.Service;
 import com.tanmay.e_commerce_application.cart_service.DTO.Request.CartItemRequestDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.CartItemResponseDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.CartResponseDTO;
+import com.tanmay.e_commerce_application.cart_service.DTO.Response.GuestCartDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.VariantResponseDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.ApiResponseWrapper;
+import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.GuestCartItemWrapper;
+import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.GuestCartWrapper;
 import com.tanmay.e_commerce_application.cart_service.Entity.Cart;
 import com.tanmay.e_commerce_application.cart_service.Entity.CartItems;
 import com.tanmay.e_commerce_application.cart_service.FeignClientInterface.CatalogClient;
@@ -28,6 +34,9 @@ public class CartService {
 
     @Autowired
     private CartItemRepo cItemRepo;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     public CartResponseDTO getCartItems(String userId) {
         System.out.println(userId);
@@ -75,4 +84,74 @@ public class CartService {
             .build();
     }
 
+    public GuestCartDTO createGuestCart() {
+        String guestCartId = String.valueOf(UUID.randomUUID());
+        GuestCartWrapper gWrapper = GuestCartWrapper.builder()
+            .guestCartId(UUID.fromString(guestCartId))
+            .guestCartItems(new HashMap<>())
+            .build();
+
+        redisTemplate.opsForValue().set(getGuestUserKey(guestCartId), gWrapper);
+
+        return GuestCartDTO.builder()
+            .guestCartId(guestCartId)
+            .build();
+    }
+
+    public GuestCartDTO addItemToGuestCart(CartItemRequestDTO cDto, String guestCartId){
+        ResponseEntity<ApiResponseWrapper<VariantResponseDTO>> resp = catalogClient.getVariant(cDto.getVariantId());
+        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+            throw new RuntimeException("Invalid variant");
+        }
+        VariantResponseDTO vDto = resp.getBody().getPayLoad();
+        GuestCartWrapper gWrapper = (GuestCartWrapper) redisTemplate.opsForValue().get(getGuestUserKey(guestCartId));
+
+        if(gWrapper == null){
+            gWrapper = GuestCartWrapper.builder()
+                .guestCartId(UUID.fromString(guestCartId))
+                .guestCartItems(new HashMap<>())
+                .build();
+        }
+
+        Map<UUID, GuestCartItemWrapper> mapIdVsCartItem = gWrapper.getGuestCartItems();
+        GuestCartItemWrapper gItemWrapper = mapIdVsCartItem.get(UUID.fromString(vDto.getId()));
+
+        if(gItemWrapper == null){
+            gItemWrapper = GuestCartItemWrapper.builder()
+                .variantId(UUID.fromString(vDto.getId()))
+                .productId(UUID.fromString(vDto.getProductId()))
+                .quantity(cDto.getQuantity())
+                .price(cDto.getQuantity() * vDto.getPriceOverride())
+                .build();
+        } else {
+            gItemWrapper.setQuantity(gItemWrapper.getQuantity() + cDto.getQuantity());
+            gItemWrapper.setPrice(gItemWrapper.getPrice() + cDto.getQuantity() * vDto.getPriceOverride());
+        }
+
+        mapIdVsCartItem.put(UUID.fromString(vDto.getId()), gItemWrapper);
+        gWrapper.setGuestCartItems(mapIdVsCartItem);
+        redisTemplate.opsForValue().set(getGuestUserKey(guestCartId), gWrapper);
+        return GuestCartDTO.builder()
+            .guestCartId(guestCartId)
+            .cartItems(mapIdVsCartItem.values().stream().toList())
+            .build();
+    }
+
+    public GuestCartDTO getGuestCart(String guestCartId){
+        GuestCartWrapper gWrapper = (GuestCartWrapper) redisTemplate.opsForValue().get(getGuestUserKey(guestCartId));
+
+        if(gWrapper == null){
+            throw new RuntimeException("Invalid guest cart id");
+        }
+
+        Map<UUID, GuestCartItemWrapper> mapIdVsCartItem = gWrapper.getGuestCartItems();
+        return GuestCartDTO.builder()
+            .guestCartId(guestCartId)
+            .cartItems(mapIdVsCartItem.values().stream().toList())
+            .build();
+    }
+
+    private String getGuestUserKey(String guestId){
+        return "guestCart:" + guestId;
+    }
 }
