@@ -1,6 +1,9 @@
 package com.tanmay.e_commerce_application.inventory_service.Service;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,15 @@ public class InventoryService {
             .orElse(new Inventory());
         
             return InventoryResponseDTO.fromEntity(inventory);
+    }
+
+    public Map<String, InventoryResponseDTO> getInventories(Set<UUID> idList){
+        return inventoryRepo.findByVariantIdIn(idList).stream()
+            .map(inv -> {
+                System.out.println(inv);
+                return InventoryResponseDTO.fromEntity(inv);
+            })
+            .collect(Collectors.toMap(i -> i.getVariantId(), i -> i));
     }
 
 }
