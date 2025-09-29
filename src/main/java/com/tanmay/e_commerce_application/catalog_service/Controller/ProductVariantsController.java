@@ -10,6 +10,9 @@ import com.tanmay.e_commerce_application.catalog_service.DTO.Wrappers.ApiRespons
 import com.tanmay.e_commerce_application.catalog_service.Service.ProductVariantService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @RestController
@@ -22,6 +25,13 @@ public class ProductVariantsController {
     public ResponseEntity<ApiResponseWrapper<?>> addVariant(@RequestBody VariantRequestDTO variant) {        
         return ResponseEntity.ok(
             ApiResponseWrapper.success("Variant added successfully", productVariantService.addVariant(variant))
+        );
+    }
+    
+    @GetMapping("get/{id}")
+    public ResponseEntity<ApiResponseWrapper<?>> getVariant(@PathVariable String id) {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Variant fetched successfully", productVariantService.getVariant(id))
         );
     }
     

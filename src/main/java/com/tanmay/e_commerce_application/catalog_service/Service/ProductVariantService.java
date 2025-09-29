@@ -25,7 +25,6 @@ public class ProductVariantService {
     private KafkaTemplate<String, VariantEvent> kafkaTemplate;
 
     public VariantResponseDTO addVariant(VariantRequestDTO variant) {
-        System.out.println(variant);
         return productRepo.findById(UUID.fromString(variant.getProductId()))
             .map(p -> {
                 ProductVariant pVariant = productVariantRepo.save(ProductVariant.toEntity(variant, p));
@@ -33,6 +32,11 @@ public class ProductVariantService {
                 return VariantResponseDTO.fromEntity(pVariant);
             })
             .orElseThrow(() -> new RuntimeException("Invalid product id"));
+    }
+
+    public VariantResponseDTO getVariant(String id) {
+        final ProductVariant pVariant = productVariantRepo.findWithProduct(UUID.fromString(id)).orElseThrow(() -> new RuntimeException("Variant not found"));
+        return VariantResponseDTO.fromEntity(pVariant);
     }
 
 }

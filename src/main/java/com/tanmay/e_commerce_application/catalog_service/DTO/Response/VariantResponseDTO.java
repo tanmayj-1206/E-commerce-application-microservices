@@ -25,7 +25,7 @@ public class VariantResponseDTO {
             .id(String.valueOf(variant.getId()))
             .color(variant.getColor())
             .sku(variant.getSku())
-            .priceOverride(variant.getPriceOverride())
+            .priceOverride(variant.getPriceOverride() != null ? variant.getPriceOverride() : variant.getProductId().getPrice())
             .productId(String.valueOf(variant.getProductId().getId()))
             .productName(String.valueOf(variant.getProductId().getName()))
             .build();
