@@ -1,6 +1,9 @@
 package com.tanmay.e_commerce_application.catalog_service.Service;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -39,4 +42,9 @@ public class ProductVariantService {
         return VariantResponseDTO.fromEntity(pVariant);
     }
 
+    public Map<String, VariantResponseDTO> getVariants(Set<UUID> idList){
+        return productVariantRepo.findAllById(idList).stream()
+            .map(var -> VariantResponseDTO.fromEntity(var))
+            .collect(Collectors.toMap(v -> v.getId(), v -> v));
+    }
 }

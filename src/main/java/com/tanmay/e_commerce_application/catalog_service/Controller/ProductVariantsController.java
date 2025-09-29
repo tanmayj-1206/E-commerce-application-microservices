@@ -1,5 +1,8 @@
 package com.tanmay.e_commerce_application.catalog_service.Controller;
 
+import java.util.Set;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,5 +37,13 @@ public class ProductVariantsController {
             ApiResponseWrapper.success("Variant fetched successfully", productVariantService.getVariant(id))
         );
     }
+
+    @PostMapping("getvariants")
+    public ResponseEntity<ApiResponseWrapper<?>> getVariants(@RequestBody Set<UUID> idList) {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Variants fetched", productVariantService.getVariants(idList))
+        );
+    }
+    
     
 }   
