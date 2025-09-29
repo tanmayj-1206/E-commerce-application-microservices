@@ -14,6 +14,7 @@ import com.tanmay.e_commerce_application.cart_service.DTO.Request.CartItemReques
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.CartItemResponseDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.CartResponseDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.GuestCartDTO;
+import com.tanmay.e_commerce_application.cart_service.DTO.Response.InventoryResponseDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Response.VariantResponseDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.ApiResponseWrapper;
 import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.GuestCartItemWrapper;
@@ -21,6 +22,7 @@ import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.GuestCartWrapp
 import com.tanmay.e_commerce_application.cart_service.Entity.Cart;
 import com.tanmay.e_commerce_application.cart_service.Entity.CartItems;
 import com.tanmay.e_commerce_application.cart_service.FeignClientInterface.CatalogClient;
+import com.tanmay.e_commerce_application.cart_service.FeignClientInterface.InventoryClient;
 import com.tanmay.e_commerce_application.cart_service.Repository.CartItemRepo;
 import com.tanmay.e_commerce_application.cart_service.Repository.CartRepo;
 
@@ -31,6 +33,9 @@ public class CartService {
 
     @Autowired
     private CatalogClient catalogClient;
+
+    @Autowired
+    private InventoryClient iClient;
 
     @Autowired
     private CartItemRepo cItemRepo;
@@ -47,10 +52,12 @@ public class CartService {
 
     public CartItemResponseDTO addCartItem(CartItemRequestDTO cDto, String userId) {
         ResponseEntity<ApiResponseWrapper<VariantResponseDTO>> resp = catalogClient.getVariant(cDto.getVariantId());
-        System.out.println(resp);
-        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+        ResponseEntity<ApiResponseWrapper<InventoryResponseDTO>> response = iClient.getInventory(cDto.getVariantId());
+
+        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null || response.getStatusCode() != HttpStatus.OK || response.getBody() == null){
             throw new RuntimeException("Invalid variant");
         }
+        InventoryResponseDTO iDto = response.getBody().getPayLoad();
         VariantResponseDTO vDto = resp.getBody().getPayLoad();
         final Cart cart = cRepo.findByUserId(UUID.fromString(userId))
             .orElseGet(() -> {
@@ -62,10 +69,16 @@ public class CartService {
 
         final CartItems cItems = cItemRepo.findByVariantIdAndProductIdAndCartId_Id(UUID.fromString(vDto.getId()), UUID.fromString(vDto.getProductId()),cart.getId())
             .map(ci -> {
+                if(ci.getQuantity() + cDto.getQuantity() > iDto.getStock()){
+                    throw new RuntimeException("Unsufficient stock");
+                }
                 ci.setQuantity(ci.getQuantity() + cDto.getQuantity());
                 ci.setPrice(ci.getPrice() + cDto.getQuantity()*vDto.getPriceOverride());
                 return cItemRepo.save(ci);
             }).orElseGet(() -> {
+                if(cDto.getQuantity() > iDto.getStock()){
+                    throw new RuntimeException("Unsufficient stock");
+                }
                 CartItems cartItems = CartItems.builder()
                     .cartId(cart)
                     .productId(UUID.fromString(vDto.getProductId()))
@@ -100,9 +113,12 @@ public class CartService {
 
     public GuestCartDTO addItemToGuestCart(CartItemRequestDTO cDto, String guestCartId){
         ResponseEntity<ApiResponseWrapper<VariantResponseDTO>> resp = catalogClient.getVariant(cDto.getVariantId());
-        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+        ResponseEntity<ApiResponseWrapper<InventoryResponseDTO>> response = iClient.getInventory(cDto.getVariantId());
+        
+        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null || response.getStatusCode() != HttpStatus.OK || response.getBody() == null){
             throw new RuntimeException("Invalid variant");
         }
+        InventoryResponseDTO iDto = response.getBody().getPayLoad();
         VariantResponseDTO vDto = resp.getBody().getPayLoad();
         GuestCartWrapper gWrapper = (GuestCartWrapper) redisTemplate.opsForValue().get(getGuestUserKey(guestCartId));
 
@@ -117,6 +133,9 @@ public class CartService {
         GuestCartItemWrapper gItemWrapper = mapIdVsCartItem.get(UUID.fromString(vDto.getId()));
 
         if(gItemWrapper == null){
+            if(cDto.getQuantity() > iDto.getStock()){
+                throw new RuntimeException("Unsufficient stock");
+            }
             gItemWrapper = GuestCartItemWrapper.builder()
                 .variantId(UUID.fromString(vDto.getId()))
                 .productId(UUID.fromString(vDto.getProductId()))
@@ -124,6 +143,9 @@ public class CartService {
                 .price(cDto.getQuantity() * vDto.getPriceOverride())
                 .build();
         } else {
+            if(gItemWrapper.getQuantity() + cDto.getQuantity() > iDto.getStock()){
+                throw new RuntimeException("Unsufficient stock");
+            }
             gItemWrapper.setQuantity(gItemWrapper.getQuantity() + cDto.getQuantity());
             gItemWrapper.setPrice(gItemWrapper.getPrice() + cDto.getQuantity() * vDto.getPriceOverride());
         }
