@@ -1,5 +1,6 @@
 package com.tanmay.e_commerce_application.catalog_service.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -46,5 +47,11 @@ public class ProductVariantService {
         return productVariantRepo.findAllById(idList).stream()
             .map(var -> VariantResponseDTO.fromEntity(var))
             .collect(Collectors.toMap(v -> v.getId(), v -> v));
+    }
+
+    public List<VariantResponseDTO> getAllVariants(){
+        return productVariantRepo.findAll().stream()
+            .map(pv -> VariantResponseDTO.fromEntity(pv))
+            .toList();
     }
 }

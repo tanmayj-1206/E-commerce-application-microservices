@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 
 
+
 @RestController
 @RequestMapping("api/variant")
 public class ProductVariantsController {
@@ -42,6 +43,13 @@ public class ProductVariantsController {
     public ResponseEntity<ApiResponseWrapper<?>> getVariants(@RequestBody Set<UUID> idList) {
         return ResponseEntity.ok(
             ApiResponseWrapper.success("Variants fetched", productVariantService.getVariants(idList))
+        );
+    }
+    
+    @GetMapping("getallvariants")
+    public ResponseEntity<ApiResponseWrapper<?>> getAllVariants() {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Variants fetched", productVariantService.getAllVariants())
         );
     }
     
