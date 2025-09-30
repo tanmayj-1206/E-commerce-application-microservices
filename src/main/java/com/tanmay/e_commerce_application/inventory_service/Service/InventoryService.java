@@ -25,7 +25,7 @@ public class InventoryService {
                 inv.setStock(inv.getStock() + iDto.getNewStock());
                 return inv;
             })
-            .orElseThrow(() -> new RuntimeException("Invalid variant Id"));
+            .orElse(Inventory.builder().stock(iDto.getNewStock()).variantId(UUID.fromString(iDto.getVariantId())).build());
         return InventoryResponseDTO.fromEntity(inventoryRepo.save(inventory));
     }
 
