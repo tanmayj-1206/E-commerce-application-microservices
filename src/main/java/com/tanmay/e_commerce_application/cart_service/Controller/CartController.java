@@ -9,6 +9,8 @@ import com.tanmay.e_commerce_application.cart_service.DTO.Request.CartItemReques
 import com.tanmay.e_commerce_application.cart_service.DTO.Request.MergeRequestDTO;
 import com.tanmay.e_commerce_application.cart_service.DTO.Wrapper.ApiResponseWrapper;
 import com.tanmay.e_commerce_application.cart_service.Service.CartService;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -34,6 +36,13 @@ public class CartController {
     public ResponseEntity<ApiResponseWrapper<?>> addCartItem(@RequestBody CartItemRequestDTO cDto, @RequestHeader("X-User-Id") String userId) {        
         return ResponseEntity.ok(
             ApiResponseWrapper.success("Item added", cService.addCartItem(cDto, userId))
+        );
+    }
+
+    @DeleteMapping("delete")
+    public ResponseEntity<ApiResponseWrapper<?>> deleteCartItem(@RequestBody CartItemRequestDTO cDto, @RequestHeader("X-User-Id") String userId) {        
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Item added", cService.deleteCartItem(cDto, userId))
         );
     }
 
@@ -65,6 +74,11 @@ public class CartController {
         );
     }
     
-    
+    @DeleteMapping("guest/{id}")
+    public ResponseEntity<ApiResponseWrapper<?>> deleteItemFromGuestCart (@RequestBody CartItemRequestDTO cDto, @PathVariable String id){
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Item deleted", cService.deleteItemFromGuestCart(cDto, id))
+        );
+    }
     
 }

@@ -101,6 +101,47 @@ public class CartService {
             .price(cItems.getPrice())
             .build();
     }
+    
+    public CartItemResponseDTO deleteCartItem(CartItemRequestDTO cDto, String userId){
+        ResponseEntity<ApiResponseWrapper<VariantResponseDTO>> resp = catalogClient.getVariant(cDto.getVariantId());
+
+        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+            throw new RuntimeException("Invalid variant");
+        }
+
+        VariantResponseDTO vDto = resp.getBody().getPayLoad();
+        final Cart cart = cRepo.findByUserId(UUID.fromString(userId))
+            .orElseGet(() -> {
+                Cart newCart = Cart.builder()
+                    .userId(UUID.fromString(userId))
+                    .build();
+                return cRepo.save(newCart);
+            });
+
+        final CartItems cItems = cItemRepo.findByVariantIdAndProductIdAndCartId_Id(UUID.fromString(vDto.getId()), UUID.fromString(vDto.getProductId()),cart.getId())
+            .map(ci -> {
+                ci.setQuantity(ci.getQuantity() - cDto.getQuantity());
+                ci.setPrice(ci.getPrice() + cDto.getQuantity()*vDto.getPriceOverride());
+                if(ci.getQuantity() > 0){
+                    return cItemRepo.save(ci);
+                }
+                cItemRepo.delete(ci);
+                return new CartItems();
+            }).orElse(new CartItems());
+            
+        if(cItems.getId() == null){
+            return CartItemResponseDTO.builder()
+                .build();
+        }
+
+        return CartItemResponseDTO.builder()
+            .id(String.valueOf(cItems.getId()))
+            .productId(String.valueOf(cItems.getProductId()))
+            .variantId(String.valueOf(cItems.getVariantId()))
+            .quantity(cItems.getQuantity())
+            .price(cItems.getPrice())
+            .build();
+    }
 
     public GuestCartDTO createGuestCart() {
         String guestCartId = String.valueOf(UUID.randomUUID());
@@ -164,6 +205,42 @@ public class CartService {
             .build();
     }
 
+    public GuestCartDTO deleteItemFromGuestCart(CartItemRequestDTO cDto, String guestCartId){
+        ResponseEntity<ApiResponseWrapper<VariantResponseDTO>> resp = catalogClient.getVariant(cDto.getVariantId());
+        
+        if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
+            throw new RuntimeException("Invalid variant");
+        }
+        VariantResponseDTO vDto = resp.getBody().getPayLoad();
+        GuestCartWrapper gWrapper = (GuestCartWrapper) redisTemplate.opsForValue().get(getGuestUserKey(guestCartId));
+
+        if(gWrapper == null){
+            gWrapper = GuestCartWrapper.builder()
+                .guestCartId(UUID.fromString(guestCartId))
+                .guestCartItems(new HashMap<>())
+                .build();
+        }
+
+        Map<UUID, GuestCartItemWrapper> mapIdVsCartItem = gWrapper.getGuestCartItems();
+        GuestCartItemWrapper gItemWrapper = mapIdVsCartItem.get(UUID.fromString(vDto.getId()));
+        if(gItemWrapper != null) {
+            Integer updatedQuantity = Math.max(0, gItemWrapper.getQuantity() - cDto.getQuantity());
+            gItemWrapper.setQuantity(updatedQuantity);
+            gItemWrapper.setPrice(updatedQuantity * vDto.getPriceOverride());
+        }
+        if(gItemWrapper != null && gItemWrapper.getQuantity() > 0){
+            mapIdVsCartItem.put(UUID.fromString(vDto.getId()), gItemWrapper);
+        } else{
+            mapIdVsCartItem.remove(UUID.fromString(vDto.getId()));
+        }
+        gWrapper.setGuestCartItems(mapIdVsCartItem);
+        redisTemplate.opsForValue().set(getGuestUserKey(guestCartId), gWrapper);
+        return GuestCartDTO.builder()
+            .guestCartId(guestCartId)
+            .cartItems(mapIdVsCartItem.values().stream().toList())
+            .build();
+    }
+
     public GuestCartDTO getGuestCart(String guestCartId){
         GuestCartWrapper gWrapper = (GuestCartWrapper) redisTemplate.opsForValue().get(getGuestUserKey(guestCartId));
 
@@ -206,24 +283,24 @@ public class CartService {
         Map<String, InventoryResponseDTO> mapIdVsInventory = response.getBody().getPayLoad();
 
         mapIdVsGuestCartItem.keySet().stream().forEach(key -> {
-                if(mapIdVsCartItem.containsKey(key)){
-                    Integer cartQuant = mapIdVsCartItem.get(key).getQuantity();
-                    Integer guestCartQuant = mapIdVsGuestCartItem.get(key).getQuantity();
-                    Integer updatedQuantity = Math.min(cartQuant + guestCartQuant, mapIdVsInventory.get(String.valueOf(key)).getStock());
-                    mapIdVsCartItem.get(key).setQuantity(updatedQuantity);
-                    mapIdVsCartItem.get(key).setPrice(updatedQuantity * mapIdVsVariant.get(String.valueOf(key)).getPriceOverride());
-                } else{
-                    Integer quantity = Math.min(mapIdVsGuestCartItem.get(key).getQuantity(), mapIdVsInventory.get(String.valueOf(key)).getStock());
-                    CartItems cItems = CartItems.builder()
-                        .cartId(cart)
-                        .productId(UUID.fromString(mapIdVsVariant.get(String.valueOf(key)).getProductId()))
-                        .variantId(key)
-                        .quantity(quantity)
-                        .price(quantity * mapIdVsVariant.get(String.valueOf(key)).getPriceOverride())
-                        .build();
-                    mapIdVsCartItem.put(key, cItems);
-                }
-            });
+            if(mapIdVsCartItem.containsKey(key)){
+                Integer cartQuant = mapIdVsCartItem.get(key).getQuantity();
+                Integer guestCartQuant = mapIdVsGuestCartItem.get(key).getQuantity();
+                Integer updatedQuantity = Math.min(cartQuant + guestCartQuant, mapIdVsInventory.get(String.valueOf(key)).getStock());
+                mapIdVsCartItem.get(key).setQuantity(updatedQuantity);
+                mapIdVsCartItem.get(key).setPrice(updatedQuantity * mapIdVsVariant.get(String.valueOf(key)).getPriceOverride());
+            } else{
+                Integer quantity = Math.min(mapIdVsGuestCartItem.get(key).getQuantity(), mapIdVsInventory.get(String.valueOf(key)).getStock());
+                CartItems cItems = CartItems.builder()
+                    .cartId(cart)
+                    .productId(UUID.fromString(mapIdVsVariant.get(String.valueOf(key)).getProductId()))
+                    .variantId(key)
+                    .quantity(quantity)
+                    .price(quantity * mapIdVsVariant.get(String.valueOf(key)).getPriceOverride())
+                    .build();
+                mapIdVsCartItem.put(key, cItems);
+            }
+        });
         redisTemplate.opsForValue().getAndDelete(getGuestUserKey(guestUserId));
         final List<CartItems> updatedCartItems = cItemRepo.saveAll(mapIdVsCartItem.values());
         cart.setCartItems(updatedCartItems);
