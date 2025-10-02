@@ -55,6 +55,8 @@ public class OrderService {
             .orderItems(oItems)
             .orderStatus(Status.PENDING)
             .build();
+        
+        oItems.forEach(oi -> oi.setOrderId(order));
 
         orderRepo.save(order);
 
