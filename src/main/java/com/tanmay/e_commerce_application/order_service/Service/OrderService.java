@@ -58,6 +58,6 @@ public class OrderService {
 
         orderRepo.save(order);
 
-        return OrderResponseDTO.fromEntity(order);
+        return OrderResponseDTO.fromEntity(order, mapIdVsVariant);
     }
 }
