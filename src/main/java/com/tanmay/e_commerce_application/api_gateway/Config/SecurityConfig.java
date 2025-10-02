@@ -25,6 +25,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeExchange(req -> req
                 .pathMatchers("/api/auth/**").permitAll()
+                .pathMatchers("/api/payment/webhook/**").permitAll()
                 .pathMatchers("/api/cart/guest/**").permitAll()
                 .pathMatchers("/api/poducts/admin/**").hasRole("ADMIN")
                 .anyExchange().authenticated()
