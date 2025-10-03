@@ -26,7 +26,9 @@ public class Payment {
     private UUID id;
 
     private UUID orderId;
-    private String transactionId;
+    private String paymentIntentId;
+    private String invoiceId;
+    private String invoicePdf;
     private Double amount;
 
     @Enumerated(EnumType.STRING)

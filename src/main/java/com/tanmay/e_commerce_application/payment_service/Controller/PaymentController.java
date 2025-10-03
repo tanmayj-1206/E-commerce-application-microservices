@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.tanmay.e_commerce_application.payment_service.DTO.Request.OrderItemRequestDTO;
 import com.tanmay.e_commerce_application.payment_service.DTO.Wrappers.ApiResponseWrapper;
@@ -31,7 +30,7 @@ public class PaymentController {
     }
 
     @PostMapping("webhook")
-    public void handleStripeEvents (@RequestBody String payload, @RequestHeader("Stripe-Signature") String signHeader) throws SignatureVerificationException {
+    public void handleStripeEvents (@RequestBody String payload, @RequestHeader("Stripe-Signature") String signHeader) throws StripeException {
         pService.handeEvents(payload, signHeader);
     }
     

@@ -12,11 +12,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.stripe.Stripe;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.PaymentIntent;
+import com.stripe.model.Invoice;
 import com.stripe.model.StripeObject;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
@@ -101,12 +100,11 @@ public class PaymentService {
             .setSuccessUrl(successUrl)
             .setCancelUrl(cancelUrl)
             .setExpiresAt(Instant.now().getEpochSecond() + expireTime)
-            .setPaymentIntentData(
-                SessionCreateParams.PaymentIntentData.builder()
-                    .putMetadata("Order-Id", oResponseDTO.getId().toString())
-                    .putMetadata("User-Id", userId)
-                    .build()
-            );
+            .setInvoiceCreation(
+                SessionCreateParams.InvoiceCreation.builder().setEnabled(true).build()
+            )
+            .putMetadata("Order-Id", oResponseDTO.getId().toString())
+            .putMetadata("User-Id", userId);
         
         Session paymentLink = Session.create(sBuilder.build());
         Payment payment = Payment.builder()
@@ -122,44 +120,36 @@ public class PaymentService {
             .build();
     }
 
-    public void handeEvents(String payload, String signHeader) throws SignatureVerificationException{
+    public void handeEvents(String payload, String signHeader) throws StripeException{
         Event event = Webhook.constructEvent(payload, signHeader, webhookSecret);
+        
+        if(!event.getType().equals("checkout.session.completed")){
+           return;
+        }
+        
         EventDataObjectDeserializer dataDeserializer = event.getDataObjectDeserializer();
         StripeObject stripeObject = dataDeserializer.getObject().orElseThrow();
         
-        switch (event.getType()) {
-            case "payment_intent.succeeded":
-                updatePayment(stripeObject, PaymentStatus.SUCCESS);
-                break;
+        Session session = (Session) stripeObject;
+        String paymentId = session.getPaymentIntent();
+        String orderId = session.getMetadata().get("Order-Id");
+        String userId = session.getMetadata().get("User-Id");
+        String invoiceId = session.getInvoice();
+        Invoice invoice = Invoice.retrieve(invoiceId);
+
+        pRepo.findByOrderId(UUID.fromString(orderId)).ifPresent(p -> {
+            p.setStatus(PaymentStatus.SUCCESS);
+            p.setPaymentIntentId(paymentId);
+            p.setInvoiceId(invoiceId);
+            p.setInvoicePdf(invoice != null ? invoice.getInvoicePdf() : null);
+            pRepo.save(p);
+            PaymentEventDTO pEventDTO = PaymentEventDTO.builder()
+                .orderId(orderId)
+                .userId(userId)
+                .build();
             
-            case "payment_intent.payment_failed":
-                updatePayment(stripeObject, PaymentStatus.FAILED);
-                break;
-
-            default:
-                break;
-        }
+            kafkaTemplate.send("PAYMENT.SUCCESS", pEventDTO);
+        });
     }
 
-    public void updatePayment(StripeObject stripeObject, PaymentStatus status){
-        PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
-        UUID orderId = UUID.fromString(paymentIntent.getMetadata().get("Order-Id"));
-        pRepo.findByOrderId(orderId)
-            .ifPresent(payment -> {
-                payment.setStatus(status);
-                payment.setTransactionId(paymentIntent.getId());
-                pRepo.save(payment);
-            });
-
-        PaymentEventDTO pDto = PaymentEventDTO.builder()
-            .orderId(paymentIntent.getMetadata().get("Order-Id"))
-            .userId(paymentIntent.getMetadata().get("User-Id"))
-            .build();
-
-        if(status == PaymentStatus.SUCCESS){
-            kafkaTemplate.send("PAYMENT.SUCCESS", pDto);
-        } else{
-            kafkaTemplate.send("PAYMENT.FAILED", pDto);
-        }
-    }
 }
