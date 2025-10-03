@@ -1,7 +1,5 @@
 package com.tanmay.e_commerce_application.inventory_service.Service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tanmay.e_commerce_application.inventory_service.DTO.Events.ExpiredOrdersEvent;
 import com.tanmay.e_commerce_application.inventory_service.DTO.Events.OrderEvent;
 import com.tanmay.e_commerce_application.inventory_service.DTO.Events.PaymentEvent;
 import com.tanmay.e_commerce_application.inventory_service.DTO.Events.VariantEvent;
@@ -33,7 +32,6 @@ import jakarta.transaction.Transactional;
 @Service
 public class InventoryListenerService {
     final private String reservationKey = "product:reservation";
-    final private String expirationKey = "product:expire";
 
     @Autowired
     private InventoryRepo inventoryRepo;
@@ -55,8 +53,6 @@ public class InventoryListenerService {
     public void reserveInventory(String message) throws JsonMappingException, JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         OrderEvent oEvent = mapper.readValue(message, OrderEvent.class);
-        Long expiration = Instant.now().plus(30, ChronoUnit.MINUTES).toEpochMilli();
-        redisTemplate.opsForZSet().add(expirationKey, oEvent.getOrderId().toString(), expiration);
         oEvent.getOrderItems().forEach(oi -> {
             redisTemplate.opsForHash().increment(reservationKey, oi.getVariantId().toString(), oi.getQuantity());
         });
@@ -72,7 +68,6 @@ public class InventoryListenerService {
         if(resp.getStatusCode() != HttpStatus.OK || resp.getBody() == null){
             return;
         }
-        redisTemplate.opsForZSet().remove(expirationKey, pEvent.getOrderId());
         Map<UUID, List<OrderItemResponseDTO>> mapIdVsOrderItems = resp.getBody().getPayLoad();
 
         Map<UUID, Integer> mapVariantIdVsQuantity = new HashMap<>();
@@ -98,4 +93,13 @@ public class InventoryListenerService {
         inventoryRepo.saveAll(inventories);
     }
 
+    @KafkaListener(topics = "ORDERS.EXPIRED")
+    public void releaseInventory(String message) throws JsonProcessingException, JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        ExpiredOrdersEvent eOrdersEvent = mapper.readValue(message, ExpiredOrdersEvent.class);
+        System.out.println(eOrdersEvent);
+        eOrdersEvent.getVariantIdVsQuantity().keySet().forEach(id -> {
+            redisTemplate.opsForHash().increment(reservationKey, id.toString(), -eOrdersEvent.getVariantIdVsQuantity().get(id));
+        });
+    }
 }
