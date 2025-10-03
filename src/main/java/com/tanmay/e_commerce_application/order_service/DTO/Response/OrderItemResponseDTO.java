@@ -29,4 +29,13 @@ public class OrderItemResponseDTO {
             .quantity(orderItem.getQuantity())
             .build();
     }
+
+    public static OrderItemResponseDTO fromEntity(OrderItem orderItem){
+        return OrderItemResponseDTO.builder()
+            .id(orderItem.getId())
+            .price(orderItem.getPrice())
+            .variantId(orderItem.getProductVariantId())
+            .quantity(orderItem.getQuantity())
+            .build();
+    }
 }

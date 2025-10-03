@@ -1,6 +1,8 @@
 package com.tanmay.e_commerce_application.order_service.Controller;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import com.tanmay.e_commerce_application.order_service.Service.OrderService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+
 
 
 @RestController
@@ -28,5 +31,13 @@ public class OrderController {
             ApiResponseWrapper.success("Order created", oService.createOrder(oDtos, userId))
         );
     }
+
+    @PostMapping("getorderitems")
+    public ResponseEntity<ApiResponseWrapper<?>> getOrderItems(@RequestBody Set<UUID> ids) {
+        return ResponseEntity.ok(
+            ApiResponseWrapper.success("Order items fetched", oService.getOrderItems(ids))
+        );
+    }
+    
     
 }

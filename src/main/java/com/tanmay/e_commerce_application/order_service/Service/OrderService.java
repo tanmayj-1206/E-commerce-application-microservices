@@ -1,5 +1,6 @@
 package com.tanmay.e_commerce_application.order_service.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.tanmay.e_commerce_application.order_service.DTO.Event.OrderEvent;
 import com.tanmay.e_commerce_application.order_service.DTO.Request.OrderItemReqDTO;
+import com.tanmay.e_commerce_application.order_service.DTO.Response.OrderItemResponseDTO;
 import com.tanmay.e_commerce_application.order_service.DTO.Response.OrderResponseDTO;
 import com.tanmay.e_commerce_application.order_service.DTO.Response.VariantResponseDTO;
 import com.tanmay.e_commerce_application.order_service.DTO.Wrappers.ApiResponseWrapper;
@@ -68,5 +70,17 @@ public class OrderService {
         kafkaTemplate.send("ORDER.CREATED", OrderEvent.fromEntity(order));
 
         return OrderResponseDTO.fromEntity(order, mapIdVsVariant);
+    }
+
+    public Map<UUID, List<OrderItemResponseDTO>> getOrderItems(Set<UUID> orderIds){
+        Map<UUID, List<OrderItemResponseDTO>> mapIdVsOrderItems = new HashMap<>();
+        orderRepo.findAllOrderWithItems(orderIds).forEach(o -> {
+            List<OrderItemResponseDTO> oDtos = o.getOrderItems().stream()
+                .map(OrderItemResponseDTO::fromEntity)
+                .toList();
+            mapIdVsOrderItems.put(o.getId(), oDtos); 
+        });
+
+        return mapIdVsOrderItems;
     }
 }
