@@ -19,7 +19,7 @@ public class UpdateOrderService {
     @Autowired
     private OrderRepo orderRepo;
 
-    @KafkaListener(groupId = "ecommerce", topics = "PAYMENT.SUCCESS")
+    @KafkaListener(topics = "PAYMENT.SUCCESS")
     public void updateOrderStatus(String message) throws JsonMappingException, JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         PaymentEvent paymentEvent = mapper.readValue(message, PaymentEvent.class);
