@@ -1,5 +1,6 @@
 package com.tanmay.e_commerce_application.order_service.Entity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,4 +43,7 @@ public class Order {
     @OneToMany(mappedBy = "orderId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<OrderItem> orderItems;
+
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
