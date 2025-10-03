@@ -23,4 +23,12 @@ public class InventoryResponseDTO {
             .stock(inventory.getStock())
             .build();
     }
+
+    public static InventoryResponseDTO fromEntity(Inventory inventory, Integer reserved){
+        return InventoryResponseDTO.builder()
+            .id(String.valueOf(inventory.getId()))
+            .variantId(String.valueOf(inventory.getVariantId()))
+            .stock(inventory.getStock() - reserved)
+            .build();
+    }
 }
