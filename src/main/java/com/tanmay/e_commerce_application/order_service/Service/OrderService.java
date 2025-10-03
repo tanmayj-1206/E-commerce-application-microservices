@@ -9,8 +9,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.tanmay.e_commerce_application.order_service.DTO.Event.OrderEvent;
 import com.tanmay.e_commerce_application.order_service.DTO.Request.OrderItemReqDTO;
 import com.tanmay.e_commerce_application.order_service.DTO.Response.OrderResponseDTO;
 import com.tanmay.e_commerce_application.order_service.DTO.Response.VariantResponseDTO;
@@ -29,6 +31,9 @@ public class OrderService {
 
     @Autowired
     private CatalogClient catalogClient;
+
+    @Autowired
+    private KafkaTemplate<String, OrderEvent> kafkaTemplate;
 
     public OrderResponseDTO createOrder(List<OrderItemReqDTO> orderItems, String userId){
         Set<UUID> variantIds = orderItems.stream().map(OrderItemReqDTO::getVariantId).collect(Collectors.toSet());
@@ -59,6 +64,8 @@ public class OrderService {
         oItems.forEach(oi -> oi.setOrderId(order));
 
         orderRepo.save(order);
+
+        kafkaTemplate.send("ORDER.CREATED", OrderEvent.fromEntity(order));
 
         return OrderResponseDTO.fromEntity(order, mapIdVsVariant);
     }
