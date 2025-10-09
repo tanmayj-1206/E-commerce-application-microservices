@@ -24,7 +24,7 @@ jobs:
           - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: example
-          MYSQL_DATABASE: library_db
+          MYSQL_DATABASE: e_commerce
         options: >-
           --health-cmd="mysqladmin ping -h localhost -pexample"
           --health-interval=10s
