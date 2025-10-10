@@ -6,30 +6,18 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Auth service package job
+name: CI - Auth service package job
 
 on:
   pull_request:
     branches: [ "main" ]
+    paths:
+      - Auth-service/**
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        ports:
-          - 3306:3306
-        env:
-          MYSQL_ROOT_PASSWORD: example
-          MYSQL_DATABASE: ecommerce_db
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -pexample"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     steps:
     - uses: actions/checkout@v4
