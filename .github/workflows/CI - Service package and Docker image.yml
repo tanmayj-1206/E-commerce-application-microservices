@@ -58,6 +58,7 @@ jobs:
           else
             echo "No pom.xml found in $dir, skipping Maven build."
           fi
+          cd ..
          done
 
     # # Set up BuildKit Docker container builder to be able to build
