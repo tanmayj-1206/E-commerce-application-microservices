@@ -69,7 +69,7 @@ jobs:
       matrix:
         service: [ auth-service, product-service, order-service, payment-service, api-gateway, server, cart-service, catalog-service, search-service ]
       fail-fast: false
-    if: needs.find-changes.outputs[matrix.service] == 'true'
+    if: needs.find-changes.outputs[${{ matrix.service }}] == 'true'
     steps:
     - uses: actions/checkout@v4
       with:
