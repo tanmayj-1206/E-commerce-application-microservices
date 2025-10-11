@@ -46,23 +46,30 @@ jobs:
         dir_names: true
         dir_names_max_depth: 1
 
-    - name: Print changed dirs
-      # if: steps.changed_files.outputs.any_changed == 'true'
+    - name: Run changed-files action @v44 (for comparison)
+      id: changed_files_v44
+      uses: tj-actions/changed-files@v44
+      with:
+        dir_names: true
+        dir_names_max_depth: 1
+        files_ignore: |
+          .github/**
+          README.md
+
+    # STEP 3: Print a detailed comparison of the outputs
+    - name: Compare outputs
       run: |
-        echo "--- Debugging changed-files action ---"
-        echo "any_changed: ${{ steps.changed_files.outputs.any_changed }}"
-        echo "changed_dirs: ${{ steps.changed_files.outputs.changed_dirs }}"
-        echo "all_changed_files: ${{ steps.changed_files.outputs.all_changed_files }}"
-        echo "--------------------------------------"
-        if [[ "${{ steps.changed_files.outputs.any_changed }}" == "true" ]]; then
-          echo "Changes detected. Proceeding to build loop..."
-          for service_dir in ${{ steps.changed_files.outputs.changed_dirs }}; do
-            echo "================ Would build ${service_dir} ================"
-            # Example: cd ${service_dir} && mvn clean install && cd -
-          done
-        else
-          echo "No changes detected in service directories. Skipping build loop."
-        fi
+        echo "--- Outputs from v47.0.0 ---"
+        echo "any_changed_v47: ${{ steps.changed_files.outputs.any_changed }}"
+        echo "changed_dirs_v47: ${{ steps.changed_files.outputs.changed_dirs }}"
+        echo "all_changed_files_v47: ${{ steps.changed_files.outputs.all_changed_files }}"
+        echo "----------------------------"
+        echo ""
+        echo "--- Outputs from v44 ---"
+        echo "any_changed_v44: ${{ steps.changed_files_v44.outputs.any_changed }}"
+        echo "changed_dirs_v44: ${{ steps.changed_files_v44.outputs.changed_dirs }}"
+        echo "all_changed_files_v44: ${{ steps.changed_files_v44.outputs.all_changed_files }}"
+        echo "--------------------------"
 
     - name: Build with Maven
       if: steps.changed_files.outputs.any_changed == 'true'
