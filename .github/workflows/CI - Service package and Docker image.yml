@@ -43,6 +43,7 @@ jobs:
         files_ignore: .github/**
         dir_names: true
         dir_names_max_depth: 1
+        dir_names_output: 'json'
 
     - name: Build with Maven
       if: steps.changed_files.outputs.any_changed == 'true'
