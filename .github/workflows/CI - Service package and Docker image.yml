@@ -23,15 +23,7 @@ jobs:
   find-changes:
     runs-on: ubuntu-latest
     outputs:
-      auth-service: ${{ steps.changes.outputs.auth-service }}
-      product-service: ${{ steps.changes.outputs.product-service }}
-      order-service: ${{ steps.changes.outputs.order-service }}
-      payment-service: ${{ steps.changes.outputs.payment-service }}
-      api-gateway: ${{ steps.changes.outputs.api-gateway }}
-      server: ${{ steps.changes.outputs.server }}
-      cart-service: ${{ steps.changes.outputs.cart-service }}
-      catalog-service: ${{ steps.changes.outputs.catalog-service }}
-      search-service: ${{ steps.changes.outputs.search-service }}
+      services: ${{ steps.changes.outputs.changes }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -40,6 +32,7 @@ jobs:
       name: Filter changes
       id: changes
       with:
+        list-files: 'json'
         filters: |
           auth-service:
             - 'Auth-service/**'
@@ -67,9 +60,8 @@ jobs:
     needs: find-changes
     strategy:
       matrix:
-        service: [ auth-service, product-service, order-service, payment-service, api-gateway, server, cart-service, catalog-service, search-service ]
+        service: ${{ fromJson(needs.find-changes.outputs.services) }}
       fail-fast: false
-    if: needs.find-changes.outputs[${{ matrix.service }}] == 'true'
     steps:
     - uses: actions/checkout@v4
       with:
