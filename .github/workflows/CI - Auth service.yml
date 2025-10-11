@@ -48,18 +48,21 @@ jobs:
     - name: Print changed dirs
       # if: steps.changed_files.outputs.any_changed == 'true'
       run: |
-        echo "Changes detected in the following services: ${{ steps.changed_files.outputs }}"
-        
-        # Loop over the output from the previous step
-        for service_dir in ${{ steps.changed_files.outputs.changed_dirs }}
-        do
-          echo "================ Building ${service_dir} ================"
-          # # Example: 'service_dir' will be 'services/auth-service'
-          # cd ${service_dir}
-          # # Assuming you have a standard Maven setup in each service directory
-          # mvn clean install 
-          # cd ../.. # Go back to the root directory for the next iteration
-        done
+        echo "--- Debugging changed-files action ---"
+        echo "any_changed: ${{ steps.changed_files.outputs.any_changed }}"
+        echo "changed_dirs: ${{ steps.changed_files.outputs.changed_dirs }}"
+        echo "all_changed_files: ${{ steps.changed_files.outputs.all_changed_files }}"
+        echo "--------------------------------------"
+
+        if [[ "${{ steps.changed_files.outputs.any_changed }}" == "true" ]]; then
+          echo "Changes detected. Proceeding to build loop..."
+          for service_dir in ${{ steps.changed_files.outputs.changed_dirs }}; do
+            echo "================ Would build ${service_dir} ================"
+            # Example: cd ${service_dir} && mvn clean install && cd -
+          done
+        else
+          echo "No changes detected in service directories. Skipping build loop."
+        fi
         
     # - name: Build with Maven
     #   run: |
