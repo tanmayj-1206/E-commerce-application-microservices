@@ -43,7 +43,6 @@ jobs:
         files_ignore: .github/**
         dir_names: true
         dir_names_max_depth: 1
-        json: true
 
     - name: Build with Maven
       if: steps.changed_files.outputs.any_changed == 'true'
@@ -66,7 +65,7 @@ jobs:
     needs: package-and-build
     strategy:
       matrix:
-        service: ${{ fromJson(needs.package-and-build.outputs.services) }} 
+        service: ${{ needs.package-and-build.outputs.services }} 
     
     steps:
       - uses: actions/checkout@v4
