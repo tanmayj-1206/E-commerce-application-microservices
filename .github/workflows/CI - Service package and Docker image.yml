@@ -42,7 +42,7 @@ jobs:
             - 'Order-service/**'
           Payment-service:
             - 'Payment-service/**'
-          Api-Gateway:
+          API-Gateway:
             - 'API-Gateway/**'
           Server:
             - 'Server/**'
