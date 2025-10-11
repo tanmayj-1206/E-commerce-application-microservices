@@ -1,0 +1,32 @@
+{"properties": [
+  {
+    "name": "stripe.secret",
+    "type": "java.lang.String",
+    "description": "Secret key for stripe gateway"
+  },
+  {
+    "name": "stripe.url.success",
+    "type": "java.lang.String",
+    "description": "Dummy success url to redirect after success payment"
+  },
+  {
+    "name": "stripe.url.cancel",
+    "type": "java.lang.String",
+    "description": "Dummy success url to redirect after success payment"
+  },
+  {
+    "name": "stripe.expire",
+    "type": "java.lang.Integer",
+    "description": "Expiration time of session"
+  },
+  {
+    "name": "stripe.currency",
+    "type": "java.lang.String",
+    "description": "Currency of payment"
+  },
+  {
+    "name": "stripe.webhook.secret",
+    "type": "java.lang.String",
+    "description": "Stripe webhook secret key"
+  }
+]}
