@@ -38,7 +38,7 @@ jobs:
     #     cache: maven
 
     - name: Get changed files
-      id: changed-files
+      id: changed_files
       uses: tj-actions/changed-files@v47.0.0
       with:
         files_ignore: .github/**
