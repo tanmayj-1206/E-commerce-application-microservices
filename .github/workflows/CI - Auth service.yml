@@ -44,9 +44,9 @@ jobs:
         dir_names_max_depth: 1
 
     - name: Print changed dirs
-      if: steps.changed_files.outputs.any_changed == 'true'
+      # if: steps.changed_files.outputs.any_changed == 'true'
       run: |
-        echo "Changes detected in the following services: ${{ steps.changed_files.outputs.changed_dirs }}"
+        echo "Changes detected in the following services: ${{ steps.changed_files.outputs }}"
         
         # Loop over the output from the previous step
         for service_dir in ${{ steps.changed_files.outputs.changed_dirs }}
