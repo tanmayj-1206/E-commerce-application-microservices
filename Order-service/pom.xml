@@ -102,7 +102,7 @@
 	</dependencyManagement>
 
 	<build>
-		<finalName>order_service</finalName>
+		<finalName>order-service</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
