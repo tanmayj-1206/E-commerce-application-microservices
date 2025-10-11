@@ -34,23 +34,23 @@ jobs:
       with:
         list-files: 'json'
         filters: |
-          auth-service:
+          Auth-service:
             - 'Auth-service/**'
-          product-service:
+          Product-service:
             - 'Product-service/**'
-          order-service:
+          Order-service:
             - 'Order-service/**'
-          payment-service:
+          Payment-service:
             - 'Payment-service/**'
-          api-gateway:
+          Api-gateway:
             - 'API-Gateway/**'
-          server:
+          Server:
             - 'Server/**'
-          cart-service:
+          Cart-service:
             - 'Cart-service/**'
-          catalog-service:
+          Catalog-service:
             - 'Catalog-service/**'
-          search-service:
+          Search-service:
             - 'Search-service/**'
 
   # Package services and build Docker images only for changed services
